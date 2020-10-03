@@ -39,8 +39,8 @@ namespace Mirai_CSharp.Robot
 
     sealed class MemberBan : AbstractSuspendManagementTask
     {
-        public MiraiHttpSession session;
-        public override int MemberNumRequired { get; } = 3;
+        private MiraiHttpSession session;
+        public override int MemberNumRequired => 3;
         public TimeSpan BanSpan { get; private set; }
 
 
@@ -48,7 +48,6 @@ namespace Mirai_CSharp.Robot
         {
             BanSpan = banSpan;
             this.session = session;
-            BanSpan = banSpan;
             session.SendGroupMessageAsync(gpid, new IMessageBase[]{new PlainMessage("即将进行对"),
                                                                    new AtMessage(ObjectId),
                                                                    new PlainMessage($"禁言{BanSpan}的禁言操作。该操作需要3" +
@@ -56,7 +55,30 @@ namespace Mirai_CSharp.Robot
         }
         public override async Task Act()
         {
+            Global.currentTask[GroupId] = null;
+            await session.SendGroupMessageAsync(GroupId, new PlainMessage("正在向服务器发送禁言请求，请注意，若禁言的对象是机器人本身或权" +
+                "限高于等于机器人的对象，则不会生效"));
             await session.MuteAsync(ObjectId, GroupId, BanSpan);
+        }
+    }
+
+    sealed class MemberKick : AbstractSuspendManagementTask
+    {
+        public override int MemberNumRequired => 5;
+        private MiraiHttpSession session;
+        public MemberKick(long objectId, long gpid, MiraiHttpSession session):base(objectId, gpid)
+        {
+            this.session = session;
+            session.SendGroupMessageAsync(GroupId, new IMessageBase[]{ new PlainMessage("即将进行对"),
+                                                                       new AtMessage(ObjectId),
+                                                                       new PlainMessage("的移除操作，该操作需要5名群友进行同步，输入accept来进行确认") }).Wait();
+        }
+        public override async Task Act()
+        {
+            Global.currentTask[GroupId] = null;
+            await session.SendGroupMessageAsync(GroupId, new PlainMessage("正在向服务器发送移除请求，请注意，若禁言的对象是机器人本身或权" +
+                "限高于等于机器人的对象，则不会生效"));
+            await session.KickMemberAsync(ObjectId, GroupId);
         }
     }
 }
