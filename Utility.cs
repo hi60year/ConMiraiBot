@@ -49,7 +49,7 @@ namespace Mirai_CSharp.Robot
             processedMsg = null;
             if (!SiglePlainMessageChecker(args))
                 return false;
-            var ret = ProcessCommandString((args.Chain[0] as PlainMessage).Message, out processedMsg);
+            var ret = ProcessCommandString(((PlainMessage)args.Chain[0]).Message, out processedMsg);
             return ret;
         }
 
@@ -127,6 +127,17 @@ p:
         {
             // TODO : 选用合适的正则表达式来解决这项工作
             throw new NotImplementedException();
+        }
+
+        public static void Keep100MessageIds(this Queue<long> ids, long newid)
+        {
+            if (ids.Count < 100)
+                ids.Enqueue(newid);
+            else
+            {
+                ids.Dequeue();
+                ids.Enqueue(newid);
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Mirai_CSharp.Robot
 
             ids.Add(await session.SendGroupMessageAsync(groupNum, new PlainMessage("4. RevokeTest")));
             ids.Add(await session.SendGroupMessageAsync(groupNum, new PlainMessage("all test messages will be revoked in 1 minutes.")));
-            Thread.Sleep(new TimeSpan(0, minutes : 1, 0));
+            Thread.Sleep(TimeSpan.FromMinutes(1));
             sw.Start();
             foreach (var id in ids)
             {
