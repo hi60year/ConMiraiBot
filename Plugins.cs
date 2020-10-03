@@ -25,12 +25,6 @@ namespace Mirai_CSharp.Robot
             return false;
         }
 
-        public async Task<bool> MessageIdRecorder(MiraiHttpSession session, IGroupMessageBaseEventArgs e)
-        {
-            
-            return false;
-        }
-
         public async Task<bool> Helper(MiraiHttpSession session, IGroupMessageEventArgs e)
         {
             throw new NotImplementedException();

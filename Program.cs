@@ -19,6 +19,8 @@ namespace Mirai_CSharp.Robot
             await using MiraiHttpSession session = new MiraiHttpSession();
             var plugin = new Plugins();
             session.GroupMessageEvt += plugin.ImageMonitor;
+            session.GroupMessageEvt += plugin.MemberBan;
+            session.GroupMessageEvt += plugin.Accept;
             await session.ConnectAsync(options, 3197173556);
             // await UnitTest.Run(session, 947904856);
             while (true)

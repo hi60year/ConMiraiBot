@@ -15,7 +15,7 @@ namespace Mirai_CSharp.Robot
     static class Utility
     {
         public static bool SiglePlainMessageChecker(IGroupMessageEventArgs args)
-            => args.Chain.Length == 1 && args.Chain[0] is PlainMessage;
+            => args.Chain.Length == 2 && args.Chain[1] is PlainMessage;
 
         /// <summary>
         /// 处理一个命令。判断一个字符串是否是命令并加以处理
@@ -29,7 +29,7 @@ namespace Mirai_CSharp.Robot
         {
             processedMsg = msg;
             var indexOfFirstSpace = msg.IndexOf(' ');
-            if (indexOfFirstSpace == -1 || Config.CommandStart.Contains(msg.Substring(0, indexOfFirstSpace)))
+            if (indexOfFirstSpace == -1 || !Config.CommandStart.Contains(msg.Substring(0, indexOfFirstSpace)))
                 return false;
             else
             {
@@ -49,7 +49,7 @@ namespace Mirai_CSharp.Robot
             processedMsg = null;
             if (!SiglePlainMessageChecker(args))
                 return false;
-            var ret = ProcessCommandString(((PlainMessage)args.Chain[0]).Message, out processedMsg);
+            var ret = ProcessCommandString(((PlainMessage)args.Chain[1]).Message, out processedMsg);
             return ret;
         }
 

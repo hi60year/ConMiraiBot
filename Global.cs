@@ -12,6 +12,7 @@ namespace Mirai_CSharp.Robot
         static Global()
         {
             messageMemory = new Dictionary<long, Queue<long>>();
+            currentTask = new Dictionary<long, AbstractSuspendManagementTask>();
             foreach(var gpid in Config.ApplyedGroups)
             {
                 messageMemory.Add(gpid, new Queue<long>());

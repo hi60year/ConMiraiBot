@@ -9,6 +9,6 @@ namespace Mirai_CSharp.Robot
     {
         public static readonly string[] CommandStart = new string[] { "bot" };
         public static readonly long[] SuperUser = new long[] { 3197173556 };
-        public static readonly long[] ApplyedGroups = new long[] {};
+        public static readonly long[] ApplyedGroups = new long[] { 1139534508 };
     }
 }
