@@ -125,19 +125,27 @@ p:
         /// <returns></returns>
         public static Dictionary<string, string?> ShellLikeArgumentParser(string str)
         {
-            // TODO : 选用合适的正则表达式来解决这项工作
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
-        public static void Keep100MessageIds(this Queue<long> ids, long newid)
+        public static void Keep100MessageIds(this LinkedList<int> ids, int newid)
         {
+            // TODO : 将链表实现更改为双向队列实现
             if (ids.Count < 100)
-                ids.Enqueue(newid);
+                ids.AddLast(newid);
             else
             {
-                ids.Dequeue();
-                ids.Enqueue(newid);
+                ids.RemoveFirst();
+                ids.AddLast(newid);
             }
+        }
+
+        public static string PlainMessageLinker(IMessageBase[] chain)
+        {
+            return chain.Where(msg => msg is PlainMessage)
+                        .Cast<PlainMessage>()
+                        .Select(plmsg => plmsg.Message)
+                        .Aggregate((lhs, rhs) => lhs + " " + rhs);
         }
     }
 }

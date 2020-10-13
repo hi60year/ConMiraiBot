@@ -21,10 +21,13 @@ namespace Mirai_CSharp.Robot
             session.GroupMessageEvt += plugin.ImageMonitor;
             session.GroupMessageEvt += plugin.MemberBan;
             session.GroupMessageEvt += plugin.Accept;
-            session.GroupMessageEvt += plugin.OnAt;
+            // session.GroupMessageEvt += plugin.OnAt;
             session.DisconnectedEvt += plugin.Disconnected;
             session.GroupMessageEvt += plugin.MemberKick;
             session.GroupMessageEvt += plugin.ManagementUsingAt;
+            session.GroupMessageEvt += plugin.MessageIdsRecorder;
+            session.GroupMessageEvt += plugin.Aphorism;
+            session.GroupMessageEvt += plugin.MessageRevoker;
             await session.ConnectAsync(options, 3197173556);
             // await UnitTest.Run(session, 947904856);
             while (true)

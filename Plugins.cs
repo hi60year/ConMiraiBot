@@ -7,6 +7,8 @@ using Mirai_CSharp.Models;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using static Mirai_CSharp.Robot.Utility;
+using Microsoft.VisualBasic;
 
 namespace Mirai_CSharp.Robot
 {
@@ -23,7 +25,6 @@ namespace Mirai_CSharp.Robot
 
             var newChain = new IMessageBase[] {e.Chain[0], new PlainMessage(e.Chain.Skip(1).Select(msg => ((PlainMessage) msg).Message)
                                                                             .Aggregate((x, y) => x + y)) };
-            //Console.WriteLine(((PlainMessage)newChain[1]).Message);
             var newArgs = new GroupMessageEventArgs(newChain, e.Sender);
             await MemberBan(session, newArgs);
             await MemberKick(session, newArgs);
@@ -163,9 +164,61 @@ namespace Mirai_CSharp.Robot
             if (selfAted)
             {
                 var imgmsg = await session.UploadPictureAsync(UploadTarget.Group, @"..\..\..\images\kokoaCry.jpg");
-                await session.SendGroupMessageAsync(e.Sender.Group.Id, new IMessageBase[] { new PlainMessage("检测到您正在at我！主人很懒，不想实" +
-                    "现接受at信息调用我的模块，请直接使用文字命令来调用！"),
-                                                                       imgmsg}, ((SourceMessage)e.Chain[0]).Id);
+                await session.SendGroupMessageAsync(e.Sender.Group.Id,
+                                                    new IMessageBase[] { new PlainMessage("检测到您正在at我！主人很懒" +
+                                                        "，不想实现接受at信息调用我的模块，请直接使用文字命令来调用！"),imgmsg},
+                                                    ((SourceMessage)e.Chain[0]).Id);
+            }
+            return false;
+        }
+
+        public async Task<bool> MessageIdsRecorder(MiraiHttpSession session, IGroupMessageEventArgs e)
+        {
+            if (!Config.ApplyedGroups.Contains(e.Sender.Group.Id)) return false;
+            Global.messageMemory[e.Sender.Group.Id].Keep100MessageIds(((SourceMessage)e.Chain[0]).Id);
+            return false;
+        }
+
+        static readonly string[] messageRevokerCommandList = new string[] {"撤回", "revoke"};
+        public async Task<bool> MessageRevoker(MiraiHttpSession session, IGroupMessageEventArgs e)
+        {
+            if (!Config.ApplyedGroups.Contains(e.Sender.Group.Id)) return false;
+            var qtmsg = e.Chain.FirstOrDefault(msg => msg is QuoteMessage);
+            if (qtmsg == null)
+                return false;
+            
+            if ( !Utility.PlainMessageLinker(e.Chain).Split().Intersect(messageRevokerCommandList).Any() ||
+                 !Config.CommandStart.Contains( Utility.PlainMessageLinker(e.Chain).Split().First() ) )
+                return false;
+
+            QuoteMessage quoteMessage = (QuoteMessage)qtmsg;
+            if (Global.currentTask[e.Sender.Group.Id] != null)
+            {
+                await session.SendGroupMessageAsync(e.Sender.Group.Id, new IMessageBase[] { new AtMessage(e.Sender.Id),
+                                                                                                new PlainMessage("已有命令注册，请等待被注册命令结束") });
+                return false;
+            }
+
+            Global.currentTask[e.Sender.Group.Id] = new MessageRevoke(quoteMessage.SenderId, e.Sender.Group.Id, session, quoteMessage.Id);
+
+            await Task.Delay(TimeSpan.FromMinutes(2));
+            if (Global.currentTask[e.Sender.Group.Id] != null)
+                await session.SendGroupMessageAsync(e.Sender.Group.Id, new PlainMessage("挂起的任务已超时"));
+            Global.currentTask[e.Sender.Group.Id] = null;
+            return false;
+        }
+
+        static readonly string[] aphorismCommandList = new string[] {"每日一句", "心灵鸡汤"};
+        public async Task<bool> Aphorism(MiraiHttpSession session, IGroupMessageEventArgs e)
+        {
+            string str;
+            if (!ProcessCommandSession(e, out str))
+            {
+                if(!aphorismCommandList.Contains(str))
+                    return false;
+                var rd = new Random();
+                await session.SendGroupMessageAsync(e.Sender.Group.Id,
+                                                    new PlainMessage(Global.aphorisms[rd.Next(Global.aphorisms.Length)]));
             }
             return false;
         }

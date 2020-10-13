@@ -4,6 +4,7 @@ using System.Text;
 using Mirai_CSharp.Models;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Net.Mail;
 
 namespace Mirai_CSharp.Robot
 {
@@ -79,6 +80,32 @@ namespace Mirai_CSharp.Robot
             await session.SendGroupMessageAsync(GroupId, new PlainMessage("正在向服务器发送移除请求，请注意，若禁言的对象是机器人本身或权" +
                 "限高于等于机器人的对象，则不会生效"));
             await session.KickMemberAsync(ObjectId, GroupId);
+        }
+    }
+
+    sealed class MessageRevoke : AbstractSuspendManagementTask
+    {
+        private MiraiHttpSession session;
+        public override int MemberNumRequired => 3;
+
+        private int messageId;
+        
+        public MessageRevoke(long objectId, long gpid, MiraiHttpSession session, int messageId) : base(objectId, gpid)
+        {
+            this.session = session;
+            this.messageId = messageId;
+
+            session.SendGroupMessageAsync(GroupId, new IMessageBase[] {new PlainMessage("正在发起对"),
+                                                                       new AtMessage(objectId),
+                                                                       new PlainMessage("消息的撤回。该操作需要3名群友进行同步操作，输入accept以进行同步。") });
+        }
+
+        public override async Task Act()
+        {
+            Global.currentTask[GroupId] = null;
+            await session.SendGroupMessageAsync(GroupId, new PlainMessage("正在向服务器发送撤回请求，请注意，如果消息" +
+                "来源的发送方权限高于等于机器人，则该命令将无效"));
+            await session.RevokeMessageAsync(messageId);
         }
     }
 }
